@@ -1,11 +1,12 @@
+---
 - name: Check and install firewall related packages
-  hosts:  fabio-desktop
+  hosts: localhost
   become: yes
   tasks:
     - name: Install 'ufw' package
       apt:
         name: ufw
-        state: present  # Ensure that the 'ufw' package is installed
+        state: present
 
     - name: Enable and start 'ufw' service
       systemd:
@@ -16,10 +17,21 @@
     - name: Check 'ufw' status
       command: ufw status
       register: ufw_status
-      ignore_errors: yes  # Ignore errors in case 'ufw' is not installed
+      ignore_errors: yes
 
     - name: Display 'ufw' status
       debug:
         var: ufw_status.stdout
 
+    - name: Display message if firewall is off
+      debug:
+        msg: "Firewall is off. You may want to configure your firewall rules."
+      when: '"Status: inactive" in ufw_status.stdout'
 
+- name: Save 'ufw' status to a JSON file
+  hosts: localhost
+  tasks:
+    - name: Save 'ufw' status to a JSON file
+      copy:
+        content: "{{ ufw_status.stdout | to_json }}"
+        dest: /home/fabio/Workspace/data.json

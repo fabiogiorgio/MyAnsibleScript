@@ -1,0 +1,25 @@
+- name: Check and install firewall related packages
+  hosts:  fabio-desktop
+  become: yes
+  tasks:
+    - name: Install 'ufw' package
+      apt:
+        name: ufw
+        state: present  # Ensure that the 'ufw' package is installed
+
+    - name: Enable and start 'ufw' service
+      systemd:
+        name: ufw
+        enabled: yes
+        state: started
+
+    - name: Check 'ufw' status
+      command: ufw status
+      register: ufw_status
+      ignore_errors: yes  # Ignore errors in case 'ufw' is not installed
+
+    - name: Display 'ufw' status
+      debug:
+        var: ufw_status.stdout
+
+
